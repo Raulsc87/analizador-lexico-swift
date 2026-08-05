@@ -3,7 +3,6 @@
 
 int linea = 1;
 
-
 void imprimirToken(char *token)
 {
     printf("Línea: %d\n", linea);
@@ -14,22 +13,25 @@ void imprimirToken(char *token)
 
 %%
 
-"var"      { imprimirToken("VAR"); }
+"var"       { imprimirToken("VAR"); }
 
-"let"      { imprimirToken("LET"); }
+"let"       { imprimirToken("LET"); }
 
-"if"       { imprimirToken("IF"); }
+"if"        { imprimirToken("IF"); }
 
-"else"     { imprimirToken("ELSE"); }
+"else"      { imprimirToken("ELSE"); }
 
+"true"|"false"     { imprimirToken("BOOLEANO"); }
 
-\n         { linea++; }
+[0-9]+\.[0-9]+     { imprimirToken("FLOTANTE"); }
 
+[0-9]+             { imprimirToken("ENTERO"); }
 
-[ \t]+     ;
+\n                  { linea++; }
 
+[ \t]+              ;
 
-.          ;
+.                   ;
 
 %%
 
@@ -39,7 +41,7 @@ int main()
 
     yylex();
 
-    printf("Fin del analisis \n");
+    printf("Fin del analisis\n");
 
     return 0;
 }
