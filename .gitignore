@@ -1,0 +1,13 @@
+.env
+entorno/
+
+__pycache__/
+*.pyc
+
+analizador/lex.yy.c
+analizador/analizador
+
+tokens.txt
+tabla_simbolos.txt
+pdf_generados/
+resultados/
