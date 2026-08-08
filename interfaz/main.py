@@ -4,6 +4,7 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
+
 # RUTAS DEL PROYECTO
 
 RAIZ_PROYECTO = Path(__file__).resolve().parent.parent
@@ -14,69 +15,43 @@ if str(RAIZ_PROYECTO) not in sys.path:
 from reportes.generar_pdf import generar_ambos_reportes
 from base_datos.mongodb import guardar_tabla_simbolos
 
-# =========================================================
-# CLASE PRINCIPAL DE LA INTERFAZ
-# =========================================================
+
+# INTERFAZ PRINCIPAL
 
 class InterfazAnalizador:
+
     def __init__(self, ventana):
         self.ventana = ventana
-
-        self.ventana.title(
-            "Analizador Léxico de Swift"
-        )
-
-        self.ventana.geometry(
-            "1150x720"
-        )
-
-        self.ventana.minsize(
-            900,
-            600
-        )
-
-        self.raiz_proyecto = RAIZ_PROYECTO
-
         self.archivo_swift = None
-
         self.ultimo_resumen = ""
+
+        self.ventana.title("Analizador Léxico de Swift")
+        self.ventana.geometry("1150x720")
+        self.ventana.minsize(900, 600)
 
         self.crear_interfaz()
 
-    # =====================================================
-    # CREACIÓN DE LA INTERFAZ
-    # =====================================================
+
+    # CREAR INTERFAZ
 
     def crear_interfaz(self):
+
         titulo = tk.Label(
             self.ventana,
             text="Analizador Léxico de Código Swift",
             font=("Arial", 20, "bold")
         )
+        titulo.pack(pady=15)
 
-        titulo.pack(
-            pady=15
-        )
+        # Selección del archivo
 
-        # -------------------------------------------------
-        # SELECCIÓN DE ARCHIVO
-        # -------------------------------------------------
-
-        marco_archivo = tk.Frame(
-            self.ventana
-        )
-
-        marco_archivo.pack(
-            fill="x",
-            padx=20,
-            pady=(0, 10)
-        )
+        marco_archivo = tk.Frame(self.ventana)
+        marco_archivo.pack(fill="x", padx=20, pady=(0, 10))
 
         self.entrada_ruta = tk.Entry(
             marco_archivo,
             font=("Arial", 11)
         )
-
         self.entrada_ruta.pack(
             side="left",
             fill="x",
@@ -84,89 +59,55 @@ class InterfazAnalizador:
             padx=(0, 10)
         )
 
-        boton_abrir = tk.Button(
+        tk.Button(
             marco_archivo,
             text="Abrir archivo Swift",
             command=self.seleccionar_archivo,
             width=18
-        )
+        ).pack(side="left")
 
-        boton_abrir.pack(
-            side="left"
-        )
 
-        # -------------------------------------------------
-        # BOTONES PRINCIPALES
-        # -------------------------------------------------
+        # Botones principales
 
-        marco_botones = tk.Frame(
-            self.ventana
-        )
+        marco_botones = tk.Frame(self.ventana)
+        marco_botones.pack(pady=5)
 
-        marco_botones.pack(
-            pady=5
-        )
-
-        boton_analizar = tk.Button(
+        tk.Button(
             marco_botones,
             text="Analizar archivo",
             command=self.analizar_archivo,
             font=("Arial", 11, "bold"),
             width=18
-        )
+        ).pack(side="left", padx=5)
 
-        boton_analizar.pack(
-            side="left",
-            padx=5
-        )
-
-        boton_pdf = tk.Button(
+        tk.Button(
             marco_botones,
             text="Generar reportes PDF",
             command=self.generar_reportes,
             font=("Arial", 11, "bold"),
             width=22
-        )
+        ).pack(side="left", padx=5)
 
-        boton_pdf.pack(
-            side="left",
-            padx=5
-        )
-
-        boton_mongodb = tk.Button(
+        tk.Button(
             marco_botones,
             text="Guardar en MongoDB",
             command=self.guardar_en_mongodb,
             font=("Arial", 11, "bold"),
             width=20
-        )
+        ).pack(side="left", padx=5)
 
-        boton_mongodb.pack(
-            side="left",
-            padx=5
-        )
-
-        boton_limpiar = tk.Button(
+        tk.Button(
             marco_botones,
             text="Limpiar",
             command=self.limpiar_resultados,
             font=("Arial", 11, "bold"),
             width=12
-        )
+        ).pack(side="left", padx=5)
 
-        boton_limpiar.pack(
-            side="left",
-            padx=5
-        )
 
-        # -------------------------------------------------
-        # PESTAÑAS
-        # -------------------------------------------------
+        # Pestañas
 
-        self.pestanas = ttk.Notebook(
-            self.ventana
-        )
-
+        self.pestanas = ttk.Notebook(self.ventana)
         self.pestanas.pack(
             fill="both",
             expand=True,
@@ -174,75 +115,42 @@ class InterfazAnalizador:
             pady=15
         )
 
-        pestana_resumen = tk.Frame(
-            self.pestanas
-        )
+        pestana_resumen = tk.Frame(self.pestanas)
+        pestana_tokens = tk.Frame(self.pestanas)
+        pestana_simbolos = tk.Frame(self.pestanas)
 
-        pestana_tokens = tk.Frame(
-            self.pestanas
-        )
-
-        pestana_simbolos = tk.Frame(
-            self.pestanas
-        )
-
-        self.pestanas.add(
-            pestana_resumen,
-            text="Resumen"
-        )
-
-        self.pestanas.add(
-            pestana_tokens,
-            text="Tokens"
-        )
-
+        self.pestanas.add(pestana_resumen, text="Resumen")
+        self.pestanas.add(pestana_tokens, text="Tokens")
         self.pestanas.add(
             pestana_simbolos,
             text="Tabla de símbolos"
         )
 
-        self.crear_resumen(
-            pestana_resumen
-        )
+        self.crear_resumen(pestana_resumen)
+        self.crear_tabla_tokens(pestana_tokens)
+        self.crear_tabla_simbolos(pestana_simbolos)
 
-        self.crear_tabla_tokens(
-            pestana_tokens
-        )
 
-        self.crear_tabla_simbolos(
-            pestana_simbolos
-        )
-
-    # =====================================================
-    # PESTAÑA RESUMEN
-    # =====================================================
+    # RESUMEN
 
     def crear_resumen(self, contenedor):
-        marco_texto = tk.Frame(
-            contenedor
-        )
 
-        marco_texto.pack(
+        marco = tk.Frame(contenedor)
+        marco.pack(
             fill="both",
             expand=True,
             padx=10,
             pady=10
         )
 
-        barra_vertical = tk.Scrollbar(
-            marco_texto
-        )
-
-        barra_vertical.pack(
-            side="right",
-            fill="y"
-        )
+        barra = tk.Scrollbar(marco)
+        barra.pack(side="right", fill="y")
 
         self.texto_resumen = tk.Text(
-            marco_texto,
+            marco,
             font=("Courier New", 11),
             wrap="word",
-            yscrollcommand=barra_vertical.set
+            yscrollcommand=barra.set
         )
 
         self.texto_resumen.pack(
@@ -251,20 +159,15 @@ class InterfazAnalizador:
             expand=True
         )
 
-        barra_vertical.config(
-            command=self.texto_resumen.yview
-        )
+        barra.config(command=self.texto_resumen.yview)
 
-    # =====================================================
-    # PESTAÑA TOKENS
-    # =====================================================
+
+    # TABLA DE TOKENS
 
     def crear_tabla_tokens(self, contenedor):
-        marco_tabla = tk.Frame(
-            contenedor
-        )
 
-        marco_tabla.pack(
+        marco = tk.Frame(contenedor)
+        marco.pack(
             fill="both",
             expand=True,
             padx=10,
@@ -272,51 +175,29 @@ class InterfazAnalizador:
         )
 
         barra_vertical = tk.Scrollbar(
-            marco_tabla,
+            marco,
             orient="vertical"
         )
 
-        barra_vertical.pack(
-            side="right",
-            fill="y"
-        )
-
         barra_horizontal = tk.Scrollbar(
-            marco_tabla,
+            marco,
             orient="horizontal"
         )
 
-        barra_horizontal.pack(
-            side="bottom",
-            fill="x"
-        )
+        barra_vertical.pack(side="right", fill="y")
+        barra_horizontal.pack(side="bottom", fill="x")
 
         self.tabla_tokens = ttk.Treeview(
-            marco_tabla,
-            columns=(
-                "linea",
-                "token",
-                "lexema"
-            ),
+            marco,
+            columns=("linea", "token", "lexema"),
             show="headings",
             yscrollcommand=barra_vertical.set,
             xscrollcommand=barra_horizontal.set
         )
 
-        self.tabla_tokens.heading(
-            "linea",
-            text="Línea"
-        )
-
-        self.tabla_tokens.heading(
-            "token",
-            text="Token"
-        )
-
-        self.tabla_tokens.heading(
-            "lexema",
-            text="Lexema"
-        )
+        self.tabla_tokens.heading("linea", text="Línea")
+        self.tabla_tokens.heading("token", text="Token")
+        self.tabla_tokens.heading("lexema", text="Lexema")
 
         self.tabla_tokens.column(
             "linea",
@@ -349,16 +230,13 @@ class InterfazAnalizador:
             command=self.tabla_tokens.xview
         )
 
-    # =====================================================
-    # PESTAÑA TABLA DE SÍMBOLOS
-    # =====================================================
+
+    # TABLA DE SÍMBOLOS
 
     def crear_tabla_simbolos(self, contenedor):
-        marco_tabla = tk.Frame(
-            contenedor
-        )
 
-        marco_tabla.pack(
+        marco = tk.Frame(contenedor)
+        marco.pack(
             fill="both",
             expand=True,
             padx=10,
@@ -366,32 +244,21 @@ class InterfazAnalizador:
         )
 
         barra_vertical = tk.Scrollbar(
-            marco_tabla,
+            marco,
             orient="vertical"
         )
 
-        barra_vertical.pack(
-            side="right",
-            fill="y"
-        )
-
         barra_horizontal = tk.Scrollbar(
-            marco_tabla,
+            marco,
             orient="horizontal"
         )
 
-        barra_horizontal.pack(
-            side="bottom",
-            fill="x"
-        )
+        barra_vertical.pack(side="right", fill="y")
+        barra_horizontal.pack(side="bottom", fill="x")
 
         self.tabla_simbolos = ttk.Treeview(
-            marco_tabla,
-            columns=(
-                "lexema",
-                "token",
-                "linea"
-            ),
+            marco,
+            columns=("lexema", "token", "linea"),
             show="headings",
             yscrollcommand=barra_vertical.set,
             xscrollcommand=barra_horizontal.set
@@ -443,66 +310,42 @@ class InterfazAnalizador:
             command=self.tabla_simbolos.xview
         )
 
-    # =====================================================
-    # SELECCIONAR ARCHIVO SWIFT
-    # =====================================================
+
+    # SELECCIONAR ARCHIVO
 
     def seleccionar_archivo(self):
+
         archivo = filedialog.askopenfilename(
             title="Seleccionar archivo Swift",
-            initialdir=(
-                self.raiz_proyecto
-                / "ejemplos_swift"
-            ),
+            initialdir=RAIZ_PROYECTO / "ejemplos_swift",
             filetypes=[
-                (
-                    "Archivos Swift",
-                    "*.swift"
-                ),
-                (
-                    "Todos los archivos",
-                    "*.*"
-                )
+                ("Archivos Swift", "*.swift"),
+                ("Todos los archivos", "*.*")
             ]
         )
 
         if not archivo:
             return
 
-        self.archivo_swift = Path(
-            archivo
-        )
+        self.archivo_swift = Path(archivo)
 
-        self.entrada_ruta.delete(
-            0,
-            tk.END
-        )
-
+        self.entrada_ruta.delete(0, tk.END)
         self.entrada_ruta.insert(
             0,
             str(self.archivo_swift)
         )
 
         self.ultimo_resumen = ""
+        self.texto_resumen.delete("1.0", tk.END)
 
-        self.texto_resumen.delete(
-            "1.0",
-            tk.END
-        )
+        self.limpiar_tabla(self.tabla_tokens)
+        self.limpiar_tabla(self.tabla_simbolos)
 
-        self.limpiar_tabla(
-            self.tabla_tokens
-        )
 
-        self.limpiar_tabla(
-            self.tabla_simbolos
-        )
-
-    # =====================================================
-    # EJECUTAR ANALIZADOR FLEX
-    # =====================================================
+    # ANALIZAR ARCHIVO
 
     def analizar_archivo(self):
+
         if self.archivo_swift is None:
             messagebox.showwarning(
                 "Archivo requerido",
@@ -518,7 +361,7 @@ class InterfazAnalizador:
             return
 
         ejecutable = (
-            self.raiz_proyecto
+            RAIZ_PROYECTO
             / "analizador"
             / "analizador"
         )
@@ -536,6 +379,7 @@ class InterfazAnalizador:
             return
 
         try:
+
             with self.archivo_swift.open(
                 "r",
                 encoding="utf-8"
@@ -546,34 +390,22 @@ class InterfazAnalizador:
                     stdin=archivo_entrada,
                     capture_output=True,
                     text=True,
-                    cwd=self.raiz_proyecto,
+                    cwd=RAIZ_PROYECTO,
                     check=True
                 )
 
-            self.ultimo_resumen = (
-                proceso.stdout
-            )
+            self.ultimo_resumen = proceso.stdout
 
             self.mostrar_resumen(
                 proceso.stdout
             )
 
-            ruta_tokens = (
-                self.raiz_proyecto
-                / "tokens.txt"
-            )
-
-            ruta_simbolos = (
-                self.raiz_proyecto
-                / "tabla_simbolos.txt"
-            )
-
             self.cargar_tokens(
-                ruta_tokens
+                RAIZ_PROYECTO / "tokens.txt"
             )
 
             self.cargar_simbolos(
-                ruta_simbolos
+                RAIZ_PROYECTO / "tabla_simbolos.txt"
             )
 
             messagebox.showinfo(
@@ -582,6 +414,7 @@ class InterfazAnalizador:
             )
 
         except subprocess.CalledProcessError as error:
+
             mensaje = (
                 error.stderr
                 or error.stdout
@@ -594,22 +427,24 @@ class InterfazAnalizador:
             )
 
         except UnicodeDecodeError:
+
             messagebox.showerror(
                 "Error de codificación",
                 "El archivo no pudo leerse como UTF-8."
             )
 
         except OSError as error:
+
             messagebox.showerror(
                 "Error",
                 str(error)
             )
 
-    # =====================================================
+
     # MOSTRAR RESUMEN
-    # =====================================================
 
     def mostrar_resumen(self, contenido):
+
         marcador = "===== RESUMEN ====="
 
         if marcador in contenido:
@@ -631,11 +466,11 @@ class InterfazAnalizador:
             contenido.strip()
         )
 
-    # =====================================================
+
     # CARGAR TOKENS
-    # =====================================================
 
     def cargar_tokens(self, ruta):
+
         self.limpiar_tabla(
             self.tabla_tokens
         )
@@ -653,9 +488,8 @@ class InterfazAnalizador:
         ) as archivo:
 
             for fila in archivo:
-                datos = fila.rstrip(
-                    "\n"
-                ).split(
+
+                datos = fila.rstrip("\n").split(
                     "\t",
                     2
                 )
@@ -675,11 +509,11 @@ class InterfazAnalizador:
                     )
                 )
 
-    # =====================================================
-    # CARGAR TABLA DE SÍMBOLOS
-    # =====================================================
+
+    # CARGAR SÍMBOLOS
 
     def cargar_simbolos(self, ruta):
+
         self.limpiar_tabla(
             self.tabla_simbolos
         )
@@ -699,9 +533,8 @@ class InterfazAnalizador:
             primera_linea = True
 
             for fila in archivo:
-                datos = fila.rstrip(
-                    "\n"
-                ).split(
+
+                datos = fila.rstrip("\n").split(
                     "\t",
                     2
                 )
@@ -733,11 +566,11 @@ class InterfazAnalizador:
                     )
                 )
 
-    # =====================================================
-    # GENERAR LOS DOS REPORTES PDF
-    # =====================================================
+
+    # GENERAR PDF
 
     def generar_reportes(self):
+
         if self.archivo_swift is None:
             messagebox.showwarning(
                 "Archivo requerido",
@@ -753,8 +586,9 @@ class InterfazAnalizador:
             return
 
         try:
+
             reporte_1, reporte_2 = generar_ambos_reportes(
-                self.raiz_proyecto,
+                RAIZ_PROYECTO,
                 self.archivo_swift,
                 self.ultimo_resumen
             )
@@ -771,22 +605,24 @@ class InterfazAnalizador:
             FileNotFoundError,
             ValueError
         ) as error:
+
             messagebox.showerror(
                 "No se pudieron generar",
                 str(error)
             )
 
         except Exception as error:
+
             messagebox.showerror(
                 "Error al generar PDF",
                 str(error)
             )
 
-    # =====================================================
-    # GUARDAR TABLA DE SÍMBOLOS EN MONGODB
-    # =====================================================
+
+    # GUARDAR EN MONGODB
 
     def guardar_en_mongodb(self):
+
         if self.archivo_swift is None:
             messagebox.showwarning(
                 "Archivo requerido",
@@ -802,11 +638,12 @@ class InterfazAnalizador:
             return
 
         ruta_tabla = (
-            self.raiz_proyecto
+            RAIZ_PROYECTO
             / "tabla_simbolos.txt"
         )
 
         try:
+
             cantidad = guardar_tabla_simbolos(
                 ruta_tabla,
                 self.archivo_swift.name
@@ -819,40 +656,45 @@ class InterfazAnalizador:
             )
 
         except FileNotFoundError as error:
+
             messagebox.showerror(
                 "Archivo no encontrado",
                 str(error)
             )
 
         except ValueError as error:
+
             messagebox.showerror(
                 "Datos inválidos",
                 str(error)
             )
 
         except ConnectionError as error:
+
             messagebox.showerror(
                 "Error de conexión",
                 str(error)
             )
 
         except RuntimeError as error:
+
             messagebox.showerror(
                 "Error de MongoDB",
                 str(error)
             )
 
         except Exception as error:
+
             messagebox.showerror(
                 "Error inesperado",
                 str(error)
             )
 
-    # =====================================================
-    # LIMPIAR INTERFAZ
-    # =====================================================
+
+    # LIMPIAR RESULTADOS
 
     def limpiar_resultados(self):
+
         self.archivo_swift = None
         self.ultimo_resumen = ""
 
@@ -874,21 +716,20 @@ class InterfazAnalizador:
             self.tabla_simbolos
         )
 
-    # =====================================================
-    # LIMPIAR UNA TABLA
-    # =====================================================
+
+    # LIMPIAR TABLA
 
     @staticmethod
     def limpiar_tabla(tabla):
+
         for elemento in tabla.get_children():
             tabla.delete(elemento)
 
 
-# =========================================================
 # INICIAR PROGRAMA
-# =========================================================
 
 def iniciar_aplicacion():
+
     ventana = tk.Tk()
 
     InterfazAnalizador(
