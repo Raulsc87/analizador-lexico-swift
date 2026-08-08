@@ -4,7 +4,6 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-# Rutas del proyecto
 RAIZ_PROYECTO = Path(__file__).resolve().parent.parent
 RUTA_REPORTES = RAIZ_PROYECTO / "reportes"
 RUTA_BASE_DATOS = RAIZ_PROYECTO / "base_datos"
@@ -15,7 +14,6 @@ sys.path.append(str(RUTA_BASE_DATOS))
 from generar_pdf import generar_ambos_reportes
 from mongodb import guardar_tabla_simbolos
 
-# Colores
 COLOR_FONDO = "#F8FAFC"
 COLOR_ENCABEZADO = "#0F172A"
 COLOR_TEXTO_SECUNDARIO = "#CBD5E1"
@@ -27,18 +25,15 @@ COLOR_GRIS = "#64748B"
 COLOR_GRIS_OSCURO = "#475569"
 COLOR_BLANCO = "#FFFFFF"
 
-# Crear ventana
 ventana = tk.Tk()
 ventana.title("Analizador Léxico de Swift")
 ventana.geometry("1100x700")
 ventana.minsize(900, 600)
 ventana.configure(bg=COLOR_FONDO)
 
-# Variables
 archivo_swift = None
 ultimo_resumen = ""
 
-# Estilos
 estilo = ttk.Style()
 
 estilo.configure(
@@ -58,7 +53,7 @@ estilo.configure(
     font=("Arial", 10, "bold")
 )
 
-# Seleccionar archivo Swift
+
 def seleccionar_archivo():
     global archivo_swift
     global ultimo_resumen
@@ -89,7 +84,7 @@ def seleccionar_archivo():
         text="Archivo seleccionado correctamente"
     )
 
-# Analizar archivo con Flex
+
 def analizar_archivo():
     global ultimo_resumen
 
@@ -112,7 +107,6 @@ def analizar_archivo():
 
     try:
         with archivo_swift.open("r", encoding="utf-8") as archivo:
-
             proceso = subprocess.run(
                 [str(ejecutable)],
                 stdin=archivo,
@@ -143,7 +137,7 @@ def analizar_archivo():
             str(error)
         )
 
-# Mostrar resumen
+
 def mostrar_resumen(texto):
     marcador = "===== RESUMEN ====="
 
@@ -153,7 +147,7 @@ def mostrar_resumen(texto):
     cuadro_resumen.delete("1.0", tk.END)
     cuadro_resumen.insert(tk.END, texto)
 
-# Cargar tokens
+
 def cargar_tokens():
     limpiar_tabla(tabla_tokens)
 
@@ -163,7 +157,6 @@ def cargar_tokens():
         return
 
     with ruta.open("r", encoding="utf-8") as archivo:
-
         for fila in archivo:
             datos = fila.rstrip("\n").split("\t", 2)
 
@@ -178,7 +171,7 @@ def cargar_tokens():
                     values=(linea, token, lexema)
                 )
 
-# Cargar tabla de símbolos
+
 def cargar_simbolos():
     limpiar_tabla(tabla_simbolos)
 
@@ -188,7 +181,6 @@ def cargar_simbolos():
         return
 
     with ruta.open("r", encoding="utf-8") as archivo:
-
         primera_linea = True
 
         for fila in archivo:
@@ -211,7 +203,7 @@ def cargar_simbolos():
                     values=(lexema, token, linea)
                 )
 
-# Generar reportes PDF
+
 def generar_pdf():
     if archivo_swift is None:
         messagebox.showwarning(
@@ -228,7 +220,7 @@ def generar_pdf():
         return
 
     try:
-        reporte1, reporte2 = generar_ambos_reportes(
+        generar_ambos_reportes(
             RAIZ_PROYECTO,
             archivo_swift,
             ultimo_resumen
@@ -249,7 +241,7 @@ def generar_pdf():
             str(error)
         )
 
-# Guardar en MongoDB
+
 def guardar_mongodb():
     if archivo_swift is None:
         messagebox.showwarning(
@@ -288,13 +280,13 @@ def guardar_mongodb():
             str(error)
         )
 
-# Limpiar resultados
+
 def limpiar_resultados():
     cuadro_resumen.delete("1.0", tk.END)
     limpiar_tabla(tabla_tokens)
     limpiar_tabla(tabla_simbolos)
 
-# Limpiar toda la interfaz
+
 def limpiar_todo():
     global archivo_swift
     global ultimo_resumen
@@ -312,12 +304,12 @@ def limpiar_todo():
         text="Esperando archivo..."
     )
 
-# Limpiar una tabla
+
 def limpiar_tabla(tabla):
     for fila in tabla.get_children():
         tabla.delete(fila)
 
-# Encabezado
+
 encabezado = tk.Frame(
     ventana,
     bg=COLOR_ENCABEZADO,
@@ -346,7 +338,6 @@ subtitulo = tk.Label(
 
 subtitulo.pack()
 
-# Área del archivo
 marco_archivo = tk.Frame(
     ventana,
     bg=COLOR_FONDO
@@ -410,15 +401,12 @@ boton_abrir.pack(
     ipady=4
 )
 
-# Botones principales
 marco_botones = tk.Frame(
     ventana,
     bg=COLOR_FONDO
 )
 
-marco_botones.pack(
-    pady=10
-)
+marco_botones.pack(pady=10)
 
 boton_analizar = tk.Button(
     marco_botones,
@@ -500,10 +488,7 @@ boton_limpiar.grid(
     ipady=5
 )
 
-# Crear pestañas
-pestanas = ttk.Notebook(
-    ventana
-)
+pestanas = ttk.Notebook(ventana)
 
 pestanas.pack(
     fill="both",
@@ -512,7 +497,6 @@ pestanas.pack(
     pady=10
 )
 
-# Pestaña resumen
 pestana_resumen = tk.Frame(
     pestanas,
     bg=COLOR_BLANCO
@@ -537,7 +521,6 @@ cuadro_resumen.pack(
     expand=True
 )
 
-# Pestaña tokens
 pestana_tokens = tk.Frame(
     pestanas,
     bg=COLOR_BLANCO
@@ -591,7 +574,6 @@ tabla_tokens.pack(
     expand=True
 )
 
-# Pestaña tabla de símbolos
 pestana_simbolos = tk.Frame(
     pestanas,
     bg=COLOR_BLANCO
@@ -645,15 +627,12 @@ tabla_simbolos.pack(
     expand=True
 )
 
-# Barra de estado
 barra_estado = tk.Frame(
     ventana,
     bg=COLOR_ENCABEZADO
 )
 
-barra_estado.pack(
-    fill="x"
-)
+barra_estado.pack(fill="x")
 
 etiqueta_estado = tk.Label(
     barra_estado,
@@ -669,5 +648,4 @@ etiqueta_estado.pack(
     pady=8
 )
 
-# Iniciar programa
 ventana.mainloop()
