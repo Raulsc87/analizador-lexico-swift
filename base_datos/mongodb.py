@@ -6,14 +6,16 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
-
+# Rutas del proyecto
 RAIZ_PROYECTO = Path(__file__).resolve().parent.parent
 load_dotenv(RAIZ_PROYECTO / ".env")
 
+# Datos de MongoDB
 NOMBRE_BASE_DATOS = "analizador_swift"
 NOMBRE_COLECCION = "tabla_simbolos"
 
 
+# Obtener conexión con MongoDB
 def obtener_coleccion():
     uri = os.getenv("MONGODB_URI")
 
@@ -35,6 +37,7 @@ def obtener_coleccion():
     return cliente, coleccion
 
 
+# Leer tabla de símbolos
 def leer_tabla_simbolos(ruta_tabla):
     ruta_tabla = Path(ruta_tabla)
 
@@ -51,6 +54,7 @@ def leer_tabla_simbolos(ruta_tabla):
         for fila in archivo:
             datos = fila.rstrip("\n").split("\t", 2)
 
+            # Ignorar encabezado
             if primera_linea:
                 primera_linea = False
 
@@ -67,6 +71,7 @@ def leer_tabla_simbolos(ruta_tabla):
 
             try:
                 linea = int(linea.strip())
+
             except ValueError:
                 linea = linea.strip()
 
@@ -81,10 +86,8 @@ def leer_tabla_simbolos(ruta_tabla):
     return simbolos
 
 
-def guardar_tabla_simbolos(
-    ruta_tabla,
-    nombre_archivo
-):
+# Guardar tabla de símbolos
+def guardar_tabla_simbolos(ruta_tabla, nombre_archivo):
     simbolos = leer_tabla_simbolos(ruta_tabla)
 
     if not simbolos:
@@ -96,6 +99,13 @@ def guardar_tabla_simbolos(
 
     try:
         cliente, coleccion = obtener_coleccion()
+
+        # Eliminar datos anteriores del mismo archivo
+        coleccion.delete_many(
+            {
+                "archivo": nombre_archivo
+            }
+        )
 
         fecha_actual = datetime.now(timezone.utc)
 
@@ -112,6 +122,7 @@ def guardar_tabla_simbolos(
                 }
             )
 
+        # Guardar nuevos datos
         resultado = coleccion.insert_many(documentos)
 
         return len(resultado.inserted_ids)
@@ -126,17 +137,22 @@ def guardar_tabla_simbolos(
             cliente.close()
 
 
+# Probar conexión
 def probar_conexion():
     cliente = None
 
     try:
         cliente, _ = obtener_coleccion()
-        print("Conexión correcta con MongoDB Atlas.")
+
+        print(
+            "Conexión correcta con MongoDB Atlas."
+        )
 
     finally:
         if cliente is not None:
             cliente.close()
 
 
+# Ejecutar prueba
 if __name__ == "__main__":
     probar_conexion()
