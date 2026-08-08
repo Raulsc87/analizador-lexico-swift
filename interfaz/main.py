@@ -4,27 +4,15 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-
-# =========================================================
 # RUTAS DEL PROYECTO
-# =========================================================
 
 RAIZ_PROYECTO = Path(__file__).resolve().parent.parent
-RUTA_REPORTES = RAIZ_PROYECTO / "reportes"
-RUTA_BASE_DATOS = RAIZ_PROYECTO / "base_datos"
 
+if str(RAIZ_PROYECTO) not in sys.path:
+    sys.path.insert(0, str(RAIZ_PROYECTO))
 
-# Permitimos importar los archivos de reportes y MongoDB.
-if str(RUTA_REPORTES) not in sys.path:
-    sys.path.insert(0, str(RUTA_REPORTES))
-
-if str(RUTA_BASE_DATOS) not in sys.path:
-    sys.path.insert(0, str(RUTA_BASE_DATOS))
-
-
-from generar_pdf import generar_ambos_reportes
-from mongodb import guardar_tabla_simbolos
-
+from reportes.generar_pdf import generar_ambos_reportes
+from base_datos.mongodb import guardar_tabla_simbolos
 
 # =========================================================
 # CLASE PRINCIPAL DE LA INTERFAZ
